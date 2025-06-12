@@ -91,7 +91,7 @@ Las contribuciones son bienvenidas. Por favor, siga estos pasos:
 Este proyecto está bajo la Licencia MIT. Vea el archivo `LICENSE` para más detalles.
 
 ## Contacto
-Para preguntas o soporte, por favor contacte a [SU_CORREO@ejemplo.com]
+Para preguntas o soporte, por favor contacte a [ecodatayucatan@gmail.com]
 
 ## Agradecimientos
 - Datos satelitales proporcionados por Sentinel-2
