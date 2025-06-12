@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "locale": "en_US",
+  "platform": "4.3.2",
+  "metadata": {
+    "appmode": "shiny",
+    "primary_rmd": null,
+    "primary_html": null,
+    "content_category": null,
+    "has_parameters": false
+  },
+  "packages": [
+    {
+      "name": "shiny",
+      "version": "1.8.0"
+    },
+    {
+      "name": "ggplot2",
+      "version": "3.5.0"
+    },
+    {
+      "name": "dplyr",
+      "version": "1.1.4"
+    },
+    {
+      "name": "plotly",
+      "version": "4.10.3"
+    },
+    {
+      "name": "lubridate",
+      "version": "1.9.3"
+    },
+    {
+      "name": "bslib",
+      "version": "0.7.0"
+    },
+    {
+      "name": "stringr",
+      "version": "1.5.1"
+    },
+    {
+      "name": "shinyjs",
+      "version": "2.1.0"
+    }
+  ],
+  "files": [
+    "app.R"
+  ]
+} 
