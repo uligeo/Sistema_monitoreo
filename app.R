@@ -665,7 +665,7 @@ server <- function(input, output, session) {
   observeEvent(input$ver_ndvi_mes_anterior, {
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "NDVI_promedio_mes_anterior_\\d{4}-\\d{2}\\.png", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "NDVI_promedio_\\d{4}-\\d{2}\\.png", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     output$imagen_ampliada <- renderImage({
