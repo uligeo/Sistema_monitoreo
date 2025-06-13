@@ -541,11 +541,11 @@ server <- function(input, output, session) {
     sitio <- input$sitio
     # Buscar la imagen más reciente NDVI_promedio_mes_anterior_YYYY-MM.png
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "NDVI_promedio_mes_anterior_\\d{4}-\\d{2}\\.png", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "NDVI_promedio__\\d{4}-\\d{2}\\.png", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     # Elegir la más reciente por nombre
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
-    list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Promedio Mes Anterior")
+    list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Promedio ")
   }, deleteFile = FALSE)
   
   # Mostrar imagen NDVI diferencia mes
