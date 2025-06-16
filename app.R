@@ -541,7 +541,7 @@ server <- function(input, output, session) {
     sitio <- input$sitio
     # Buscar la imagen más reciente NDVI_promedio_mes_anterior_YYYY-MM.png
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "NDVI_promedio_\\d{4}-\\d{2}\\.png", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     # Elegir la más reciente por nombre
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
@@ -552,7 +552,7 @@ server <- function(input, output, session) {
   output$imagen_ndvi_diferencia <- renderImage({
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "NDVI_diferencia_\\d{4}-\\d{2}-\\d{2}_vs_\\d{4}-\\d{2}\\.png", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "^NDVI_diferencia_[0-9]{4}-[0-9]{2}-[0-9]{2}_vs_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Diferencia Mes")
@@ -665,7 +665,7 @@ server <- function(input, output, session) {
   observeEvent(input$ver_ndvi_mes_anterior, {
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "NDVI_promedio_\\d{4}-\\d{2}\\.png", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     output$imagen_ampliada <- renderImage({
@@ -679,7 +679,7 @@ server <- function(input, output, session) {
   observeEvent(input$ver_ndvi_diferencia, {
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "NDVI_diferencia_\\d{4}-\\d{2}-\\d{2}_vs_\\d{4}-\\d{2}\\.png", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "^NDVI_diferencia_[0-9]{4}-[0-9]{2}-[0-9]{2}_vs_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     output$imagen_ampliada <- renderImage({
