@@ -428,7 +428,7 @@ server <- function(input, output, session) {
     if(length(rgb_img) == 0) rgb_img <- imagenes[grep("_RGB", imagenes)]
     if(length(rgb_img) == 0) rgb_img <- imagenes[grep("rgb", tolower(imagenes))]
     
-    ndvi_img <- imagenes[grep("NDVI_[0-9]", imagenes)]
+    ndvi_img <- imagenes[grep("NDVI_[0-9]|NDVI_promedio", imagenes)]
     if(length(ndvi_img) == 0) ndvi_img <- imagenes[grep("ndvi", tolower(imagenes))]
     
     falsecolor_img <- imagenes[grep("FalseColor", imagenes)]
@@ -539,12 +539,15 @@ server <- function(input, output, session) {
   # Mostrar imagen NDVI promedio mes anterior
   output$imagen_ndvi_mes_anterior <- renderImage({
     sitio <- input$sitio
-    # Buscar la imagen más reciente NDVI_promedio_mes_anterior_YYYY-MM.png
     ruta_dir <- file.path("Imagenes", sitio)
+    if (!dir.exists(ruta_dir)) return(NULL)
+    
     archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
-    # Elegir la más reciente por nombre
+    
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
+    if (!file.exists(archivo)) return(NULL)
+    
     list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Promedio ")
   }, deleteFile = FALSE)
   
@@ -552,9 +555,14 @@ server <- function(input, output, session) {
   output$imagen_ndvi_diferencia <- renderImage({
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "^NDVI_diferencia_[0-9]{4}-[0-9]{2}-[0-9]{2}_vs_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+    if (!dir.exists(ruta_dir)) return(NULL)
+    
+    archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
+    
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
+    if (!file.exists(archivo)) return(NULL)
+    
     list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Diferencia Mes")
   }, deleteFile = FALSE)
   
@@ -679,7 +687,7 @@ server <- function(input, output, session) {
   observeEvent(input$ver_ndvi_diferencia, {
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "^NDVI_diferencia_[0-9]{4}-[0-9]{2}-[0-9]{2}_vs_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+    archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png$", full.names = TRUE)
     if (length(archivos) == 0) return(NULL)
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     output$imagen_ampliada <- renderImage({
