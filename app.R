@@ -423,22 +423,36 @@ server <- function(input, output, session) {
       imagenes <- imagenes[str_detect(imagenes, fixed(input$fecha_imagen))]
     }
     
-    # Intentar encontrar imágenes específicas
-    rgb_img <- imagenes[grep("RGB_", imagenes)]
-    if(length(rgb_img) == 0) rgb_img <- imagenes[grep("_RGB", imagenes)]
-    if(length(rgb_img) == 0) rgb_img <- imagenes[grep("rgb", tolower(imagenes))]
-    
-    ndvi_img <- imagenes[grep("NDVI_[0-9]|NDVI_promedio", imagenes)]
-    if(length(ndvi_img) == 0) ndvi_img <- imagenes[grep("ndvi", tolower(imagenes))]
-    
-    falsecolor_img <- imagenes[grep("FalseColor", imagenes)]
-    if(length(falsecolor_img) == 0) falsecolor_img <- imagenes[grep("falsecolor", tolower(imagenes))]
-    if(length(falsecolor_img) == 0) falsecolor_img <- imagenes[grep("false", tolower(imagenes))]
-    
-    # Si no se encuentran imágenes específicas, usar las primeras disponibles
-    if(length(rgb_img) == 0 && length(imagenes) > 0) rgb_img <- imagenes[1]
-    if(length(ndvi_img) == 0 && length(imagenes) > 1) ndvi_img <- imagenes[2]
-    if(length(falsecolor_img) == 0 && length(imagenes) > 2) falsecolor_img <- imagenes[3]
+    # Lógica específica para Hopelchen
+    if(sitio == "hopelchen") {
+      # Para Hopelchen, buscar imágenes promedio del mes más reciente
+      rgb_img <- imagenes[grep("RGB_promedio_[0-9]{4}-[0-9]{2}\\.png$", imagenes)]
+      ndvi_img <- imagenes[grep("NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", imagenes)]
+      falsecolor_img <- imagenes[grep("FalseColor_promedio_[0-9]{4}-[0-9]{2}\\.png$", imagenes)]
+      
+      # Tomar el más reciente de cada tipo
+      if(length(rgb_img) > 0) rgb_img <- rgb_img[order(rgb_img, decreasing = TRUE)][1]
+      if(length(ndvi_img) > 0) ndvi_img <- ndvi_img[order(ndvi_img, decreasing = TRUE)][1]
+      if(length(falsecolor_img) > 0) falsecolor_img <- falsecolor_img[order(falsecolor_img, decreasing = TRUE)][1]
+      
+    } else {
+      # Lógica original para otros sitios
+      rgb_img <- imagenes[grep("RGB_", imagenes)]
+      if(length(rgb_img) == 0) rgb_img <- imagenes[grep("_RGB", imagenes)]
+      if(length(rgb_img) == 0) rgb_img <- imagenes[grep("rgb", tolower(imagenes))]
+      
+      ndvi_img <- imagenes[grep("NDVI_[0-9]", imagenes)]
+      if(length(ndvi_img) == 0) ndvi_img <- imagenes[grep("ndvi", tolower(imagenes))]
+      
+      falsecolor_img <- imagenes[grep("FalseColor", imagenes)]
+      if(length(falsecolor_img) == 0) falsecolor_img <- imagenes[grep("falsecolor", tolower(imagenes))]
+      if(length(falsecolor_img) == 0) falsecolor_img <- imagenes[grep("false", tolower(imagenes))]
+      
+      # Si no se encuentran imágenes específicas, usar las primeras disponibles
+      if(length(rgb_img) == 0 && length(imagenes) > 0) rgb_img <- imagenes[1]
+      if(length(ndvi_img) == 0 && length(imagenes) > 1) ndvi_img <- imagenes[2]
+      if(length(falsecolor_img) == 0 && length(imagenes) > 2) falsecolor_img <- imagenes[3]
+    }
     
     list(
       rgb = if(length(rgb_img) > 0) rgb_img[1] else NULL,
@@ -542,13 +556,29 @@ server <- function(input, output, session) {
     ruta_dir <- file.path("Imagenes", sitio)
     if (!dir.exists(ruta_dir)) return(NULL)
     
-    archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
-    if (length(archivos) == 0) return(NULL)
+    if(sitio == "hopelchen") {
+      # Para Hopelchen, buscar archivos NDVI promedio y tomar el segundo más reciente (mes anterior)
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+      if (length(archivos) >= 2) {
+        # Ordenar por fecha y tomar el segundo (mes anterior)
+        archivos_ordenados <- archivos[order(archivos, decreasing = TRUE)]
+        archivo <- archivos_ordenados[2]
+      } else if (length(archivos) == 1) {
+        # Si solo hay uno, usar ese
+        archivo <- archivos[1]
+      } else {
+        return(NULL)
+      }
+    } else {
+      # Para otros sitios, usar el patrón original
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+      if (length(archivos) == 0) return(NULL)
+      archivo <- archivos[order(archivos, decreasing = TRUE)][1]
+    }
     
-    archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     if (!file.exists(archivo)) return(NULL)
     
-    list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Promedio ")
+    list(src = archivo, contentType = "image/png", width = "auto", height = 300, alt = "NDVI Promedio Mes Anterior")
   }, deleteFile = FALSE)
   
   # Mostrar imagen NDVI diferencia mes
@@ -557,7 +587,14 @@ server <- function(input, output, session) {
     ruta_dir <- file.path("Imagenes", sitio)
     if (!dir.exists(ruta_dir)) return(NULL)
     
-    archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png$", full.names = TRUE)
+    if(sitio == "hopelchen") {
+      # Para Hopelchen, buscar archivos con formato NDVI_Diff_YYYY-MM_YYYY-MM.png
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+    } else {
+      # Para otros sitios, usar el patrón original
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png$", full.names = TRUE)
+    }
+    
     if (length(archivos) == 0) return(NULL)
     
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
@@ -673,9 +710,27 @@ server <- function(input, output, session) {
   observeEvent(input$ver_ndvi_mes_anterior, {
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
-    if (length(archivos) == 0) return(NULL)
-    archivo <- archivos[order(archivos, decreasing = TRUE)][1]
+    
+    if(sitio == "hopelchen") {
+      # Para Hopelchen, buscar archivos NDVI promedio y tomar el segundo más reciente (mes anterior)
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+      if (length(archivos) >= 2) {
+        # Ordenar por fecha y tomar el segundo (mes anterior)
+        archivos_ordenados <- archivos[order(archivos, decreasing = TRUE)]
+        archivo <- archivos_ordenados[2]
+      } else if (length(archivos) == 1) {
+        # Si solo hay uno, usar ese
+        archivo <- archivos[1]
+      } else {
+        return(NULL)
+      }
+    } else {
+      # Para otros sitios, usar el patrón original
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_promedio_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+      if (length(archivos) == 0) return(NULL)
+      archivo <- archivos[order(archivos, decreasing = TRUE)][1]
+    }
+    
     output$imagen_ampliada <- renderImage({
       list(src = archivo, contentType = "image/png", width = "100%", alt = "NDVI Promedio Mes Anterior")
     }, deleteFile = FALSE)
@@ -687,7 +742,15 @@ server <- function(input, output, session) {
   observeEvent(input$ver_ndvi_diferencia, {
     sitio <- input$sitio
     ruta_dir <- file.path("Imagenes", sitio)
-    archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png$", full.names = TRUE)
+    
+    if(sitio == "hopelchen") {
+      # Para Hopelchen, buscar archivos con formato NDVI_Diff_YYYY-MM_YYYY-MM.png
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}_[0-9]{4}-[0-9]{2}\\.png$", full.names = TRUE)
+    } else {
+      # Para otros sitios, usar el patrón original
+      archivos <- list.files(ruta_dir, pattern = "^NDVI_Diff_[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png$", full.names = TRUE)
+    }
+    
     if (length(archivos) == 0) return(NULL)
     archivo <- archivos[order(archivos, decreasing = TRUE)][1]
     output$imagen_ampliada <- renderImage({
